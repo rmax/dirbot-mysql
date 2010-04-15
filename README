@@ -1,0 +1,9 @@
+1. create database
+    $ mysql -uroot
+    mysql> create database googledir;
+2. create table
+    $ mysql -uroot googledir < db/mysql.sql
+3. start crawling
+    $ ./scrapy-ctl.py crawl directory.google.com
+
+DB credentials are hardcoded in `googledir/pipelines.py`
