@@ -35,36 +35,30 @@ class MySQLStorePipeline(object):
             )
 
     def process_item(self, spider, item):
-        # defered call to check if record already exists
-        query = self.dbpool.runQuery(\
-                "select * from sites where url = %s", (item['url'][0], ))
-        query.addCallback(self.conditional_insert(item))
+        # run db query in thread pool
+        query = self.dbpool.runInteraction(self._conditional_insert, item)
         query.addErrback(self.handle_error)
 
         return item
 
-    def conditional_insert(self, item):
-        """Returns defered callback to insert item only if record not
-        exists"""
-
-        def callback(results):
-            if results:
-                log.msg("Item already stored in db: %s" % item)
-            else:
-                now = time.time()
-                query = self.dbpool.runQuery(\
-                    "insert into sites (name, url, description, created) "
-                    "values (%s, %s, %s, %s)",
-                    (item['name'][0],
-                     item['url'][0],
-                     item['description'][0],
-                     now)
-                )
-                query.addCallback(lambda r: log.msg(\
-                        "Item stored: %s" % item['name'][0]))
-                query.addErrback(self.handle_error)
-
-        return callback
+    def _conditional_insert(self, tx, item):
+        # create record if doesn't exist. 
+        # all this block run on it's own thread
+        tx.execute("select * from sites where url = %s", (item['url'][0], ))
+        result = tx.fetchall()
+        if result:
+            log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
+        else:
+            now = time.time()
+            tx.execute(\
+                "insert into sites (name, url, description, created) "
+                "values (%s, %s, %s, %s)",
+                (item['name'][0],
+                 item['url'][0],
+                 item['description'][0],
+                 now)
+            )
+            log.msg("Item stored in db: %s" % item, level=log.DEBUG)
 
     def handle_error(self, e):
         log.err(e)
