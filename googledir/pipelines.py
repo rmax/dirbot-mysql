@@ -45,18 +45,17 @@ class MySQLStorePipeline(object):
         # create record if doesn't exist. 
         # all this block run on it's own thread
         tx.execute("select * from sites where url = %s", (item['url'][0], ))
-        result = tx.fetchall()
+        result = tx.fetchone()
         if result:
             log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
         else:
-            now = time.time()
             tx.execute(\
                 "insert into sites (name, url, description, created) "
                 "values (%s, %s, %s, %s)",
                 (item['name'][0],
                  item['url'][0],
                  item['description'][0],
-                 now)
+                 time.time())
             )
             log.msg("Item stored in db: %s" % item, level=log.DEBUG)
 
