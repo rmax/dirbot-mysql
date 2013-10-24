@@ -1,4 +1,0 @@
-Project no longer maintained as Google's directory website has been shutdown.
-
-But the mysql pipeline (googledir/pipelines.py) still functional and you can
-use it in your own projects with some minor modifications.
