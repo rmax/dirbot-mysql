@@ -43,7 +43,35 @@ only those two pages.
 Pipelines
 =========
 
-This project uses a pipeline to filter out websites containing certain
-forbidden words in their description. This pipeline is defined in the class::
+Filtering by words
+------------------
+
+A pipeline to filter out websites containing certain forbidden words in their
+description. This pipeline is defined in the class::
 
     dirbot.pipelines.FilterWordsPipeline
+
+Requiring certain item fields
+-----------------------------
+
+A pipeline to discard items that lack of certain fields. This pipeline is
+defined in the class::
+
+    dirbot.pipelines.RequiredFieldsPipeline
+
+
+Storing items in a MySQL database
+---------------------------------
+
+A pipeline to store (insert or update) scraped items in a MySQL database. This
+pipeline is defined in the class::
+
+    dirbot.pipelines.MySQLStorePipeline
+
+The database schema is defined in ``db/mysql.sql`` and the settings file
+contains the default ``MYSQL_*`` settings values. The scraped items will be
+stored in the ``website`` database table.
+
+.. note::
+
+    It is *required* to have set up the database schema *before* running the spider.
