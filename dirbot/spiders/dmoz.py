@@ -1,7 +1,7 @@
 from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
-from dirbot.items import Website
+from dirbot.items import WebsiteLoader
 
 
 class DmozSpider(BaseSpider):
@@ -22,13 +22,10 @@ class DmozSpider(BaseSpider):
         """
         hxs = HtmlXPathSelector(response)
         sites = hxs.select('//ul[@class="directory-url"]/li')
-        items = []
 
         for site in sites:
-            item = Website()
-            item['name'] = site.select('a/text()').extract()
-            item['url'] = site.select('a/@href').extract()
-            item['description'] = site.select('text()').re('-\s([^\n]*?)\\n')
-            items.append(item)
-
-        return items
+            il = WebsiteLoader(response=response, selector=site)
+            il.add_xpath('name', 'a/text()')
+            il.add_xpath('url', 'a/@href')
+            il.add_xpath('description', 'text()', re='-\s([^\n]*?)\\n')
+            yield il.load_item()
